@@ -85,6 +85,7 @@ for index, systematic_row in systematics_with_process_df_unique.iterrows():
     hist_lower_array = np.array([])
 
     separator_locations = []
+    label_locations = [0.]
     category_names = []
 
     if debug: print("Harvesting histograms")
@@ -141,6 +142,7 @@ for index, systematic_row in systematics_with_process_df_unique.iterrows():
 
         if systematic_size != '-':
             separator_locations.append(len(hist_central_array))
+            label_locations.append(len(hist_central_array))
             category_names.append(search_result_row["category"])
             if debug: print("Saving upper hist")
             hist_upper_array = np.concatenate((hist_upper_array, root_numpy.hist2array(hist_upper)))
@@ -274,7 +276,8 @@ for index, systematic_row in systematics_with_process_df_unique.iterrows():
 
     #pad1.cd()
     category_nametags = []
-    for catname, seploc in zip(category_names, separator_locations):
+    label_locations.pop(-1)
+    for catname, seploc in zip(category_names, label_locations):
         if args.ratio: 
             category_nametags.append(pyr.TLatex(seploc, max_boundary/2, catname))
         else: 
