@@ -169,8 +169,12 @@ for index, systematic_row in systematics_with_process_df_unique.iterrows():
     #mountainrange_upper_ratio = pyr.TH1F("mountainrange_upper_ratio", "{} in {}".format(systematic_name, process_name), len(hist_upper_array), 0, len(hist_upper_array))
     #mountainrange_lower_ratio = pyr.TH1F("mountainrange_lower_ratio", "{} in {}".format(systematic_name, process_name), len(hist_lower_array), 0, len(hist_lower_array))
 
-    max_boundary = max([max(hist_central_array[np.nonzero(hist_central_array)]), max(hist_upper_array[np.nonzero(hist_upper_array)]), max(hist_lower_array[np.nonzero(hist_lower_array)])])*10.
-    min_boundary = min([min(hist_central_array[np.nonzero(hist_central_array)]), min(hist_upper_array[np.nonzero(hist_upper_array)]), min(hist_lower_array[np.nonzero(hist_lower_array)])])/10.
+    if args.ratio:
+        max_boundary = 10.
+        min_boundary = 0.00001
+    else:
+        max_boundary = max([max(hist_central_array[np.nonzero(hist_central_array)]), max(hist_upper_array[np.nonzero(hist_upper_array)]), max(hist_lower_array[np.nonzero(hist_lower_array)])])*10.
+        min_boundary = min([min(hist_central_array[np.nonzero(hist_central_array)]), min(hist_upper_array[np.nonzero(hist_upper_array)]), min(hist_lower_array[np.nonzero(hist_lower_array)])])/10.
 
     root_numpy.array2hist(hist_central_array, mountainrange_central)
     root_numpy.array2hist(hist_upper_array, mountainrange_upper)
@@ -208,19 +212,18 @@ for index, systematic_row in systematics_with_process_df_unique.iterrows():
     mountainrange_lower.SetStats(0)
 
     mountainrange_central.GetXaxis().SetTitle("Histogram bins")
+    pyr.gPad.SetLogy(True)
     mountainrange_central.GetYaxis().SetRangeUser(min_boundary, max_boundary)
     mountainrange_upper.GetYaxis().SetRangeUser(min_boundary, max_boundary)
     mountainrange_lower.GetYaxis().SetRangeUser(min_boundary, max_boundary)
 
-    pyr.gPad.SetLogy(True)
     if args.ratio: mountainrange_central.GetYaxis().SetTitle("Ratio to central")
     else: mountainrange_central.GetYaxis().SetTitle("Event yields")
 
     if debug: print(separator_locations)
     separator_lines = []
     for seploc in separator_locations:
-        if args.ratio: separator_lines.append(pyr.TLine(seploc, 0., seploc, 2.))
-        else: separator_lines.append(pyr.TLine(seploc, min_boundary, seploc, max_boundary))
+        separator_lines.append(pyr.TLine(seploc, min_boundary, seploc, max_boundary))
     for line in separator_lines:
         line.SetLineStyle(pyr.kDashed)
         line.SetLineWidth(2)
@@ -278,10 +281,7 @@ for index, systematic_row in systematics_with_process_df_unique.iterrows():
     category_nametags = []
     label_locations.pop(-1)
     for catname, seploc in zip(category_names, label_locations):
-        if args.ratio: 
-            category_nametags.append(pyr.TLatex(seploc, max_boundary/2, catname))
-        else: 
-            category_nametags.append(pyr.TLatex(seploc, 1.8, catname))
+        category_nametags.append(pyr.TLatex(seploc, max_boundary/2, catname))
     for cattag in category_nametags:
         cattag.Draw()
     if args.ratio: canvas.SaveAs("mountainrange_ratio_{}/{}_{}.root".format(args.cardname, systematic_name, process_name))
